@@ -1,0 +1,19 @@
+#!/bin/bash -e
+ZEEK=$1
+VER=$2
+
+echo ZEEK is "$ZEEK"
+echo VER is "$VER"
+
+rm -f /opt/spicy/lib/libhilti-rt-debug.a
+rm -f /opt/spicy/lib/libhilti-rt.a
+rm -f /opt/spicy/lib/libspicy-rt-debug.a
+rm -f /opt/spicy/lib/libspicy-rt.a
+rm -rf "/usr/local/${ZEEK}-${VER}/var/lib/"
+
+while IFS= read -r -d '' file; do
+	if file "$file" | grep "not stripped" > /dev/null ; then
+		strip "$file"
+	fi
+done < <(find "/usr/local/${ZEEK}-${VER}" /opt/spicy -type f -print0)
+

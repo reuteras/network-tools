@@ -1,0 +1,23 @@
+#!/bin/bash -e
+ZEEK=$1
+VER=$2
+
+URL=https://download.zeek.org/${ZEEK}-${VER}.tar.gz
+
+echo ZEEK is "$ZEEK"
+echo VER is "$VER"
+echo URL is "$URL"
+
+cd /usr/src/
+if [ ! -e "${ZEEK}-${VER}.tar.gz" ] ; then 
+    wget -c "$URL"
+fi
+if [ ! -d "${ZEEK}-${VER}" ]; then
+    tar xvzf "${ZEEK}-${VER}.tar.gz"
+fi
+cd "${ZEEK}-${VER}"
+./configure --prefix="/usr/local/${ZEEK}-${VER}"
+make -j "$(nproc)" install
+
+ln -s "/usr/local/${ZEEK}-${VER}" /zeek
+ln -s "/usr/local/${ZEEK}-${VER}" /bro

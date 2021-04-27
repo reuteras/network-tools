@@ -1,0 +1,26 @@
+#!/bin/bash -e
+ZEEK=$1
+VER=$2
+
+echo ZEEK is "$ZEEK"
+echo VER is "$VER"
+
+cd /tmp
+git clone --recursive https://github.com/zeek/spicy
+cd spicy
+echo "Configure"
+./configure --generator=Ninja --prefix=/opt/spicy --with-zeek=/opt/zeek --build-zeek-plugin=no
+ninja -j 2 -C build install
+
+# Install 
+python3 -m pip install -U pip
+python3 -m pip install GitPython semantic-version
+echo Y | zkg autoconfig
+echo "@load packages" >>"$(zeek-config --site_dir)"/local.zeek
+echo Y | zkg install spicy-plugin
+echo Y | zkg install spicy-analyzers
+
+# Clean
+rm -rf build
+cd /tmp
+rm -rf /tmp/spicy
