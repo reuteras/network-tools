@@ -4,7 +4,7 @@ LABEL maintainer="Coding <code@ongoing.today>"
 
 ENV WD /scratch
 ENV DEBIAN_FRONTEND noninteractive
-ENV VER 4.0.1
+ENV VER 4.0.2
 ENV PATH /zeek/bin:/opt/spicy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 RUN mkdir ${WD}
@@ -70,7 +70,7 @@ RUN apt-get update && \
 
 # Make final image
 FROM ubuntu:focal
-ENV VER 4.0.1
+ENV VER 4.0.2
 ENV DEBIAN_FRONTEND noninteractive
 ENV PATH /zeek/bin:/opt/spicy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
