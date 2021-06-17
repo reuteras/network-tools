@@ -17,10 +17,9 @@ python3 -m pip install -U pip
 python3 -m pip install GitPython semantic-version
 echo Y | zkg autoconfig
 echo "@load packages" >>"$(zeek-config --site_dir)"/local.zeek
-echo Y | zkg install spicy-plugin
-echo Y | zkg install spicy-analyzers
+echo Y | zkg install --skiptests spicy-plugin
+echo Y | zkg install --skiptests spicy-analyzers
 
 # Clean
-rm -rf build
 cd /tmp
 rm -rf /tmp/spicy
