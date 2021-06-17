@@ -87,7 +87,7 @@ RUN apt-get update && \
         python3-minimal && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    rm -rf /var/lib/apt/lists/* /usr/share/doc && \
+    rm -rf /usr/share/doc && \
     rm -rf /usr/local/share/man /var/cache/debconf/*-old && \
     rm -f /usr/share/GeoIP/.notempty && \
     ln -s /usr/local/zeek-${VER} /bro && \
