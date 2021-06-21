@@ -1,19 +1,19 @@
 # Build zeek
-FROM ubuntu:focal as builder
+FROM ubuntu:focal
 LABEL maintainer="Coding <code@ongoing.today>"
 
-ENV WD /scratch
 ENV DEBIAN_FRONTEND noninteractive
-ENV VER 4.0.2
-ENV PATH /zeek/bin:/opt/spicy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV ZEEK_LTS=-lts
+ENV ZEEK_VERSION=4.0.2-0
+ENV SPICY_VERSION=1.1.0
 
-RUN mkdir ${WD}
+ENV ZEEK_DIR "/opt/zeek"
+ENV SPICY_DIR "/opt/spicy"
+ENV PATH "${ZEEK_DIR}/bin:${SPICY_DIR}/bin:${ZEEK_DIR}/lib/zeek/plugins/packages/spicy-plugin/bin:${PATH}"
 
-WORKDIR ${WD}
+ENV CCACHE_DIR "/var/spool/ccache"
 
-ADD ./common/buildzeek ${WD}/common/buildzeek
-ADD ./common/buildspicy ${WD}/common/buildspicy
-ADD ./common/buildstrip ${WD}/common/buildstrip
+ADD ./common/zeek_install_plugins.sh /usr/local/bin/
 
 RUN apt-get update && \
     apt-get upgrade -yq && \
@@ -23,6 +23,7 @@ RUN apt-get update && \
         build-essential \
         ca-certificates \
         ccache \
+        clang-11 \
         cmake \
         curl \
         file \ 
@@ -43,57 +44,55 @@ RUN apt-get update && \
         make \
         ninja-build \
         python3-dev \
+        python3-git \
         python3-pip \
+        python3-semantic-version \
         python3-setuptools \
         python3-wheel \
         swig \
         wget \
-        zlib1g-dev
-# Run in separate statements. Build environment so no need to optimice space.
-RUN ${WD}/common/buildzeek zeek ${VER}
-RUN ${WD}/common/buildspicy zeek ${VER}
-RUN ${WD}/common/buildstrip zeek ${VER}
-
-
-# Get geoip data
-FROM ubuntu:focal as geogetter
-ARG MAXMIND_LICENSE_KEY
-ADD ./common/getmmdb.sh /usr/local/bin/getmmdb.sh
-
-RUN apt-get update && \
-    apt-get -qy install wget ca-certificates --no-install-recommends && \
-    mkdir -p /usr/share/GeoIP && \
-    /usr/local/bin/getmmdb.sh ${MAXMIND_LICENSE_KEY} && \
-    # This is a workaround for the case where getmmdb.sh does not create any files.
-    touch /usr/share/GeoIP/.notempty
-
-
-# Make final image
-FROM ubuntu:focal
-ENV VER 4.0.2
-ENV DEBIAN_FRONTEND noninteractive
-ENV PATH /zeek/bin:/opt/spicy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-ADD ./common/zeek_profile.sh /etc/profile.d/zeek.sh
-COPY --from=builder /usr/local/zeek-${VER} /usr/local/zeek-${VER}
-COPY --from=builder /opt/spicy /opt/spicy
-COPY --from=geogetter /usr/share/GeoIP/* /usr/share/GeoIP/
-
-RUN apt-get update && \
-    apt-get -yq install --no-install-recommends \
-        libpcap0.8 \
-        libssl1.1 \
-        libmaxminddb0 \
-        python3-minimal && \
+        zlib1g-dev && \
+    python3 -m pip install --no-cache-dir pyzmq && \
+    mkdir -p /tmp/zeek-packages && \
+    cd /tmp/zeek-packages && \
+    curl -sSL --remote-name-all \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb" && \
+    dpkg -i ./*.deb && \
+    mkdir -p /tmp/spicy-packages && \
+    cd /tmp/spicy-packages && \
+    curl -sSL --remote-name-all \
+        "https://github.com/zeek/spicy/releases/download/v${SPICY_VERSION}/spicy_linux_debian10.deb" && \
+    dpkg -i ./*.deb && \
+	cd /tmp && \
+    mkdir -p "${CCACHE_DIR}" && \
+    zkg autoconfig --force && \
+    zkg install --force --skiptests zeek/spicy-plugin && \
+    bash /usr/local/bin/zeek_install_plugins.sh && \
+    ( find "${ZEEK_DIR}"/lib -type d -name CMakeFiles -exec rm -rf "{}" \; 2>/dev/null || true ) && \
+    ( find "${ZEEK_DIR}"/var/lib/zkg -type d -name build -exec rm -rf "{}" \; 2>/dev/null || true ) && \
+    ( find "${ZEEK_DIR}"/var/lib/zkg/clones -type d -name .git -execdir bash -c "pwd; du -sh; git pull --depth=1 --ff-only; git reflog expire --expire=all --all; git tag -l | xargs -r git tag -d; git gc --prune=all; du -sh" \; ) && \
+    rm -rf "${ZEEK_DIR}"/var/lib/zkg/scratch && \
+    ( find "${ZEEK_DIR}/" "${SPICY_DIR}/" -type f -exec file "{}" \; | grep -Pi "ELF 64-bit.*not stripped" | sed 's/:.*//' | xargs -l -r strip --strip-unneeded ) && \
+    ( find "${ZEEK_DIR}/" "${SPICY_DIR}/" -type f -exec file "{}" \; | grep -Pi "current ar archive" | sed 's/:.*//' | xargs -l -r strip --strip-unneeded ) && \
+    mkdir -p "${ZEEK_DIR}"/var/lib/zkg/clones/package/spicy-plugin/build/plugin/bin/ && \
+    ln -s -r "${ZEEK_DIR}"/lib/zeek/plugins/packages/spicy-plugin/bin/spicyz \
+        "${ZEEK_DIR}"/var/lib/zkg/clones/package/spicy-plugin/build/plugin/bin/spicyz && \
+    mkdir -p "${ZEEK_DIR}"/var/lib/zkg/clones/package/spicy-plugin/plugin/lib/ && \
+    ln -s -r "${ZEEK_DIR}"/lib/zeek/plugins/packages/spicy-plugin/lib/bif \
+        "${ZEEK_DIR}"/var/lib/zkg/clones/package/spicy-plugin/plugin/lib/bif && \
+    cd /usr/lib/locale && \
+    ( ls | grep -Piv "^(en|en_US|en_US\.utf-?8|C\.utf-?8)$" | xargs -l -r rm -rf ) && \
+    cd /tmp && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /usr/share/doc && \
-    rm -rf /usr/local/share/man /var/cache/debconf/*-old && \
-    rm -f /usr/share/GeoIP/.notempty && \
-    ln -s /usr/local/zeek-${VER} /bro && \
-    ln -s /usr/local/zeek-${VER} /zeek && \
-    mkdir /output
-    
-WORKDIR "/output"
+    apt-get autoremove -y && \
+    apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/*/*
 
-CMD /bin/bash -l
+CMD ["/bin/bash"]
