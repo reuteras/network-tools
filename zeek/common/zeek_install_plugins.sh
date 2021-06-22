@@ -3,7 +3,7 @@
 SPICY_DIR=${SPICY_DIR:-/opt/spicy}
 ZEEK_DIR=${ZEEK_DIR:-/opt/zeek}
 
-SRC_BASE_DIR="/tmp/src"
+SRC_BASE_DIR="/opt/src"
 mkdir -p "$SRC_BASE_DIR"
 
 #
