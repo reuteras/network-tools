@@ -4,7 +4,7 @@ LABEL maintainer="Coding <code@ongoing.today>"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV ZEEK_LTS=-lts
-ENV ZEEK_VERSION=4.0.2-0
+ENV ZEEK_VERSION=4.0.3-0
 ENV SPICY_VERSION=1.1.0
 
 ENV ZEEK_DIR "/opt/zeek"
