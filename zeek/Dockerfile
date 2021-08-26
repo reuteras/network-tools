@@ -3,9 +3,10 @@ FROM ubuntu:focal
 LABEL maintainer="Coding <code@ongoing.today>"
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV ZEEK_LTS=-lts
-ENV ZEEK_VERSION=4.0.3-0
-ENV SPICY_VERSION=1.1.0
+# Tracking latest and not "-lts"
+ENV ZEEK_LTS="" 
+ENV ZEEK_VERSION="4.1.0-0"
+ENV SPICY_VERSION="1.2.1"
 
 ENV ZEEK_DIR "/opt/zeek"
 ENV SPICY_DIR "/opt/spicy"
@@ -62,6 +63,7 @@ RUN apt-get update && \
         "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-libcaf-dev_${ZEEK_VERSION}_amd64.deb" \
         "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb" \
         "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_amd64.deb" \
+        "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-btest-data_${ZEEK_VERSION}_amd64.deb" \
         "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_amd64.deb" \
         "https://download.zeek.org/binary-packages/xUbuntu_20.04/amd64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_amd64.deb" && \
     dpkg -i ./*.deb && \
