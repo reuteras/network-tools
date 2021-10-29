@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # Tracking latest and not "-lts"
 ENV ZEEK_LTS="" 
 ENV ZEEK_VERSION="4.1.1-0"
-ENV SPICY_VERSION="1.2.1"
+ENV SPICY_VERSION="1.3.0"
 
 ENV ZEEK_DIR "/opt/zeek"
 ENV SPICY_DIR "/opt/spicy"
