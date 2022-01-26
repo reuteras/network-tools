@@ -45,10 +45,10 @@ image-rm:
 	docker rmi container-network-tools || true
 
 clean:
-	docker rm pcaps || true
-	docker stop container-zeek_db_1 || true
-	docker rm container-zeek_db_1 || true
-	docker volume rm container-zeek_db || true
+	docker rm pcaps 2> /dev/null || true
+	docker stop network-tools_db_1 2> /dev/null || true
+	docker rm network-tools_db_1 2> /dev/null || true
+	docker volume rm network-tools_db 2> /dev/null || true
 
 dist-clean: image-rm clean
 	rm -rf output reports
