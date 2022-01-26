@@ -6,10 +6,10 @@ COUNT=$(find pcap -type f | wc -l | awk '{print $1}')
 [[ -e input/input.pcap ]] && rm -f input/input.pcap
 
 function run_container() {
-    docker run --rm -v "$PWD"/input:/input -v "$PWD"/pcap:/pcap:ro container-network-tools mergecap -w input/input.pcap pcap/*
+    docker run --rm -v "${PWD}"/input:/input -v "${PWD}"/pcap:/pcap:ro container-network-tools mergecap -w input/input.pcap pcap/*
 }
 
-if [[ $COUNT -gt 1 ]]; then
+if [[ ${COUNT} -gt 1 ]]; then
     if docker images -a | grep -E ^container-network-tools > /dev/null 2>&1 ; then
         run_container
     else
@@ -19,6 +19,6 @@ if [[ $COUNT -gt 1 ]]; then
     fi
 fi
 
-docker run -it --rm -v "$PWD"/input:/pcap:ro -v "$PWD"/output:/output -w /output container-zeek-tools zeek -C -r "/pcap/input.pcap"
+docker run -it --rm -v "${PWD}"/input:/pcap:ro -v "${PWD}"/output:/output -w /output container-zeek zeek -C -r "/pcap/input.pcap"
 
 rm -rf input
