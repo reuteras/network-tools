@@ -4,4 +4,12 @@ This container is based on [zeek-docker](https://github.com/zeek/zeek-docker) fr
 
 This is a work in progress!
 
-Switch to deb? https://github.com/idaholab/Malcolm/blob/master/Dockerfiles/zeek.Dockerfile
+## Resources
+
+- [zeek](https://zeek.org/)
+- [rita](https://github.com/activecm/rita) - Check for updates in [docker-compose.yml](https://github.com/activecm/rita/blob/master/docker-compose.yml)
+
+## TODO
+
+- How should Sigma rules be included?
+
