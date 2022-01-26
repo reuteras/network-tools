@@ -3,7 +3,7 @@ all: run report
 interactive: run-zeek
 
 run-zeek:
-	docker run -it --rm -v "$$PWD"/pcap:/pcap:ro -v "$$PWD"/output:/output -w /output container-zeek /bin/bash
+	docker run -it --rm -v "$$PWD"/pcap:/pcap:ro -v "$$PWD"/output:/output -w /output reuteras/container-zeek /bin/bash
 
 run: output pcap reports clean
 	rm -rf output/*
@@ -26,16 +26,8 @@ report:
 reports:
 	mkdir -p reports
 
-build: build-zeek
-
-build-zeek:
-	docker build --tag=container-zeek zeek
-
-no-cache-build-zeek:
-	docker build --tag=container-zeek --no-cache zeek
-
 image-rm:
-	docker rmi container-zeek || true
+	docker rmi reuteras/container-zeek || true
 	docker rmi reuteras/container-alpine-network:latest || true
 
 clean:
