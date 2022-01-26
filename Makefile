@@ -26,7 +26,7 @@ report:
 reports:
 	mkdir -p reports
 
-build: build-zeek build-tools
+build: build-zeek
 
 build-zeek:
 	docker build --tag=container-zeek zeek
@@ -34,15 +34,9 @@ build-zeek:
 no-cache-build-zeek:
 	docker build --tag=container-zeek --no-cache zeek
 
-build-tools:
-	docker build --tag=container-network-tools tools
-
-no-cache-build-tools:
-	docker build --tag=container-network-tools --no-cache tools
-
 image-rm:
 	docker rmi container-zeek || true
-	docker rmi container-network-tools || true
+	docker rmi reuteras/container-alpine-network:latest || true
 
 clean:
 	docker rm pcaps 2> /dev/null || true
