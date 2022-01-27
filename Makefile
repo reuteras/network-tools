@@ -21,10 +21,15 @@ pcap:
 	mkdir -p pcap
 
 report:
-	open reports/$(shell ls -rt reports/ | tail -1)/pcaps/index.html
+	open reports/$(shell ls -rt reports/ | tail -1)/pcaps/index.html 2> /dev/null || true
+	xdg-open reports/$(shell ls -rt reports/ | tail -1)/pcaps/index.html 2> /dev/null || true
 
 reports:
 	mkdir -p reports
+
+image-pull:
+	docker pull reuteras/container-zeek || true
+	docker pull reuteras/container-alpine-network:latest || true
 
 image-rm:
 	docker rmi reuteras/container-zeek || true
