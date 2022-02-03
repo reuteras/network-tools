@@ -8,6 +8,7 @@ This is a work in progress!
 
 - [zeek](https://zeek.org/)
 - [rita](https://github.com/activecm/rita) - Check for updates in [docker-compose.yml](https://github.com/activecm/rita/blob/master/docker-compose.yml)
+- [zeek2es](https://github.com/corelight/zeek2es) under this [License](https://github.com/corelight/zeek2es/blob/master/LICENSE)
 
 ## TODO
 
