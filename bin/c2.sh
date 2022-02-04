@@ -6,5 +6,10 @@ read -r -p "Enter C2 IP: " c2
 
 cp rita-default.yaml rita.yaml
 
-sed -i "" -e "s/CHANGEME/${c2}/" rita.yaml 
+# Difference in sed on macOS and Linux?
+if [[ $(uname) == "Darwin" ]]; then
+    sed -i '' -e "s/CHANGEME/${c2}/" rita.yaml
+else
+    sed -i'' -e "s/CHANGEME/${c2}/" rita.yaml
+fi
 
