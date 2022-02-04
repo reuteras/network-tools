@@ -57,13 +57,10 @@ update-zeek2es:
 
 es-up:
 	docker-compose -f docker-compose-elastic.yml up -d
-	es-create-index
+	./bin/create_index.sh
 
 es-down:
 	docker-compose -f docker-compose-elastic.yml down
-
-es-create-index:
-	./bin/create_index.sh
 
 clean:
 	rm -rf .env rita.yaml || true
