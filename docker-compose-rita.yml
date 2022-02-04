@@ -11,7 +11,7 @@ services:
     links:
       - db:localhost
     volumes:
-      - ./rita-docker.yaml:/etc/rita/config.yaml:ro
+      - ./rita.yaml:/etc/rita/config.yaml:ro
       - ./output:/logs:ro
     depends_on:
       - db
