@@ -1,5 +1,6 @@
-reports/*
+.env
+input
 output/*
 pcap/
-.env
+reports/*
 rita.yaml
