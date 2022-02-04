@@ -15,16 +15,19 @@ zeek-interactive-shell:
 zeek-import-es: .env python-requires es-up
 	. $(virtualenv)/bin/activate && find output -name "*.log" -exec python zeek2es.py {} \;
 
-zeek-output: dir-output dir-pcap dir-reports clean
+zeek-output: rita.yaml dir-output dir-pcap dir-reports clean
 	rm -rf output/*
 	./bin/run-zeek-pcap-dir.sh
-	docker-compose run --rm rita import /logs pcaps
-	docker-compose run --name pcaps rita html-report
+	docker-compose -f docker-compose-rita.yml run --rm rita import /logs pcaps
+	docker-compose -f docker-compose-rita.yml run --name pcaps rita html-report
 	rm -rf pcaps
 	docker cp "pcaps:/pcaps" reports/$(shell date +"%s")
 
 create-capinfos:
 	./bin/tshark.sh
+
+rita.yaml:
+	./bin/c2.sh
 
 dir-output: 
 	mkdir -p output
@@ -60,10 +63,10 @@ es-down:
 	docker-compose -f docker-compose-elastic.yml down
 
 es-create-index:
-	./create_index.sh
+	./bin/create_index.sh
 
 clean:
-	rm -rf .env || true
+	rm -rf .env rita.yaml || true
 	docker rm pcaps 2> /dev/null || true
 	docker stop network-tools_db_1 2> /dev/null || true
 	docker rm network-tools_db_1 2> /dev/null || true
