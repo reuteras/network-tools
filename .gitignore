@@ -2,3 +2,4 @@ reports/*
 output/*
 pcap/
 .env
+rita.yaml
