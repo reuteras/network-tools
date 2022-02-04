@@ -1,39 +1,43 @@
+all: run report
+
 virtualenv = .env
+
 $(virtualenv):
 	test -d $(virtualenv) || python3 -m venv $(virtualenv)
 	. $(virtualenv)/bin/activate && python -m pip install -U pip
 
-requires: $(virtualenv)
+python-requires: $(virtualenv)
 	. $(virtualenv)/bin/activate && python -m pip install requests
 
-all: run report
-
-interactive: run-zeek
-
-run-zeek:
+zeek-interactive-shell:
 	docker run -it --rm -v "$$PWD"/pcap:/pcap:ro -v "$$PWD"/output:/output -w /output reuteras/container-zeek /bin/bash
 
-run: output pcap reports clean
+zeek-import-es: .env python-requires es-up
+	. $(virtualenv)/bin/activate && find output -name "*.log" -exec python zeek2es.py {} \;
+
+zeek-output: dir-output dir-pcap dir-reports clean
 	rm -rf output/*
 	./bin/run-zeek-pcap-dir.sh
-	./bin/tshark.sh
 	docker-compose run --rm rita import /logs pcaps
 	docker-compose run --name pcaps rita html-report
 	rm -rf pcaps
 	docker cp "pcaps:/pcaps" reports/$(shell date +"%s")
 
-output: 
+create-capinfos:
+	./bin/tshark.sh
+
+dir-output: 
 	mkdir -p output
 
-pcap:
+dir-pcap:
 	mkdir -p pcap
 
-report:
+dir-reports:
+	mkdir -p reports
+
+rita-open-report:
 	open reports/$(shell ls -rt reports/ | tail -1)/pcaps/index.html 2> /dev/null || true
 	xdg-open reports/$(shell ls -rt reports/ | tail -1)/pcaps/index.html 2> /dev/null || true
-
-reports:
-	mkdir -p reports
 
 image-pull:
 	docker pull reuteras/container-zeek || true
@@ -41,26 +45,22 @@ image-pull:
 	docker pull docker.elastic.co/elasticsearch/elasticsearch:7.17.0 || true
 	docker pull docker.elastic.co/kibana/kibana:7.17.0 || true
 
+image-rm:
+	docker rmi reuteras/container-zeek || true
+	docker rmi reuteras/container-alpine-network:latest || true
+
 update-zeek2es:
 	curl -o zeek2es.py -s https://raw.githubusercontent.com/corelight/zeek2es/master/zeek2es.py && chmod +x zeek2es.py
 
 es-up:
 	docker-compose -f docker-compose-elastic.yml up -d
+	es-create-index
 
 es-down:
 	docker-compose -f docker-compose-elastic.yml down
 
 es-create-index:
 	./create_index.sh
-
-zeek-import: .env requires
-	. $(virtualenv)/bin/activate && find output -name "*.log" -exec python zeek2es.py {} \;
-
-zeek-es: es-up es-create-index zeek-import
-
-image-rm:
-	docker rmi reuteras/container-zeek || true
-	docker rmi reuteras/container-alpine-network:latest || true
 
 clean:
 	rm -rf .env || true
