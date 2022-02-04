@@ -1,10 +1,22 @@
-# Container for zeek
+# Network tools 
 
-This container is based on [zeek-docker](https://github.com/zeek/zeek-docker) from [Zeek](https://zeek.org/) with packages and some other tools included.
+Scripts and configuration to use zeek with [Rita](https://github.com/activecm/rita) and [zeek2es](https://github.com/corelight/zeek2es). 
 
-This is a work in progress!
+## Usage
 
-## Resources
+Copy the pcaps to the *pcap* subdirectory. Then run 
+
+    make zeek-output
+
+To generate zeek logs and Rita report. To view the report run
+
+    make rita-open-report
+
+Import to Elastic with (view http://127.0.0.1:5601)
+
+    zeek-import-es
+
+## Links
 
 - [zeek](https://zeek.org/)
 - [rita](https://github.com/activecm/rita) - Check for updates in [docker-compose.yml](https://github.com/activecm/rita/blob/master/docker-compose.yml)
