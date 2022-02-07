@@ -17,6 +17,8 @@ if [[ ${COUNT} -gt 1 ]]; then
         docker pull reuteras/container-alpine-network
         run_container
     fi
+else
+    cp pcap/* input/input.pcap
 fi
 
 docker run -it --rm -v "${PWD}"/input:/pcap:ro -v "${PWD}"/output:/output -w /output reuteras/container-zeek zeek -C -r "/pcap/input.pcap"
