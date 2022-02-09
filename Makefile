@@ -1,6 +1,7 @@
 all: run report
 
 virtualenv = .env
+elastic_version = 7.17.0
 
 $(virtualenv):
 	test -d $(virtualenv) || python3 -m venv $(virtualenv)
@@ -54,12 +55,16 @@ rita-open-report:
 image-pull:
 	docker pull reuteras/container-zeek || true
 	docker pull reuteras/container-alpine-network:latest || true
-	docker pull docker.elastic.co/elasticsearch/elasticsearch:7.17.0 || true
-	docker pull docker.elastic.co/kibana/kibana:7.17.0 || true
+	docker pull docker.elastic.co/elasticsearch/elasticsearch:$(elastic_version) || true
+	docker pull docker.elastic.co/kibana/kibana:$(elastic_version) || true
+	docker pull docker.elastic.co/beats/filebeat:$(elastic_version) || true
 
-image-rm:
+image-rm: es-down
 	docker rmi reuteras/container-zeek || true
 	docker rmi reuteras/container-alpine-network:latest || true
+	docker rmi docker.elastic.co/elasticsearch/elasticsearch:$(elastic_version) || true
+	docker rmi docker.elastic.co/kibana/kibana:$(elastic_version) || true
+	docker rmi docker.elastic.co/beats/filebeat:$(elastic_version) || true
 
 update-zeek2es:
 	curl -o zeek2es.py -s https://raw.githubusercontent.com/corelight/zeek2es/master/zeek2es.py && chmod +x zeek2es.py
