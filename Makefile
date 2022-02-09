@@ -12,7 +12,7 @@ python-requires: $(virtualenv)
 zeek-interactive-shell:
 	docker run -it --rm -v "$$PWD"/pcap:/pcap:ro -v "$$PWD"/output:/output -w /output reuteras/container-zeek /bin/bash
 
-zeek-import-es: .env python-requires es-up
+zeek-zeek2es-import: .env python-requires es-up
 	. $(virtualenv)/bin/activate && find output -name "*.log" -exec python zeek2es.py {} \;
 
 zeek-output: dir-output dir-pcap dir-reports clean rita.yaml
@@ -20,8 +20,17 @@ zeek-output: dir-output dir-pcap dir-reports clean rita.yaml
 	./bin/run-zeek-pcap-dir.sh
 	docker-compose -f docker-compose-rita.yml run --rm rita import /logs pcaps
 	docker-compose -f docker-compose-rita.yml run --name pcaps rita html-report
-	rm -rf pcaps
 	docker cp "pcaps:/pcaps" reports/$(shell date +"%s")
+	docker rm pcaps 2> /dev/null
+	docker stop network-tools_db_1 2> /dev/null
+	docker rm network-tools_db_1 2> /dev/null
+
+zeek-json-import:
+	rm -rf output-json/*
+	docker-compose -f docker-compose-elastic.yml --profile filebeat up -d
+	./bin/create_index.sh json
+	sleep 30
+	./bin/run-zeek-pcap-dir.sh json
 
 create-capinfos:
 	./bin/tshark.sh
@@ -30,7 +39,7 @@ rita.yaml:
 	./bin/c2.sh
 
 dir-output: 
-	mkdir -p output
+	mkdir -p output output-json
 
 dir-pcap:
 	mkdir -p pcap
@@ -70,4 +79,4 @@ clean:
 	docker volume rm network-tools_db 2> /dev/null || true
 
 dist-clean: image-rm clean
-	rm -rf output reports
+	rm -rf output output-json reports

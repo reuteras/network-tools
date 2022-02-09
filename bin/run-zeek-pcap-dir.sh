@@ -21,6 +21,10 @@ else
     cp pcap/* input/input.pcap
 fi
 
-docker run -it --rm -v "${PWD}"/input:/pcap:ro -v "${PWD}"/output:/output -w /output reuteras/container-zeek zeek -C -r "/pcap/input.pcap"
+if [[ "${1}" == "json" ]]; then
+    docker run -it --rm -v "${PWD}"/input:/pcap:ro -v "${PWD}/output-json":/output -v "${PWD}/config/local.zeek:/opt/zeek/share/zeek/site/local.zeek" -w /output reuteras/container-zeek zeek -C -r "/pcap/input.pcap" local
+else
+    docker run -it --rm -v "${PWD}"/input:/pcap:ro -v "${PWD}/output":/output -w /output reuteras/container-zeek zeek -C -r "/pcap/input.pcap"
+fi
 
 rm -rf input

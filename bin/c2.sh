@@ -4,7 +4,7 @@
 
 read -r -p "Enter C2 IP: " c2
 
-cp rita-default.yaml rita.yaml
+cp config/rita-default.yaml rita.yaml
 
 # Difference in sed on macOS and Linux?
 if [[ $(uname) == "Darwin" ]]; then
