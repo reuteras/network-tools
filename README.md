@@ -12,9 +12,13 @@ To generate zeek logs and Rita report. To view the report run
 
     make rita-open-report
 
-Import to Elastic with (view http://127.0.0.1:5601)
+Import to Elastic with (view http://127.0.0.1:5601) with zeek2es:
 
-    zeek-import-es
+    make zeek-zeek2es-import
+
+or via Elastic Filebeat:
+
+    make zeek-json-import
 
 ## Links
 
@@ -26,6 +30,6 @@ Import to Elastic with (view http://127.0.0.1:5601)
 
 - How should [Sigma](https://github.com/SigmaHQ/sigma) rules be included?
 - Look at [How to hunt with Zeek using Sigma rules for your SIEM](https://www.youtube.com/watch?v=B20u53S72zA)
-- Compare import with [Filebeat](https://www.ericooi.com/zeekurity-zen-part-viii-how-to-send-zeek-logs-to-elastic/) to zeek2es.
 - Sigma rules for Cobalt strike (but no pcap) can be found in [Cobalt Strike, a Defender’s Guide](https://thedfirreport.com/2021/08/29/cobalt-strike-a-defenders-guide/) and in [Cobalt Strike, a Defender’s Guide – Part 2](https://thedfirreport.com/2022/01/24/cobalt-strike-a-defenders-guide-part-2/) by The DFIR Report.
+- Configure local networks for Zeek.
 
