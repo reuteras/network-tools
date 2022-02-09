@@ -1,6 +1,7 @@
 .env
 input
 output/*
+output-json/*
 pcap/
 reports/*
 rita.yaml
