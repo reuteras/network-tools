@@ -2,9 +2,10 @@ all: run report
 
 virtualenv = .env
 elastic_version = 7.17.0
+python = python3.8
 
 $(virtualenv):
-	test -d $(virtualenv) || python3 -m venv $(virtualenv)
+	test -d $(virtualenv) || $(python) -m venv $(virtualenv)
 	. $(virtualenv)/bin/activate && python -m pip install -U pip
 
 python-requires: $(virtualenv)
@@ -19,12 +20,6 @@ zeek-zeek2es-import: .env python-requires es-up
 zeek-output: dir-output dir-pcap dir-reports clean rita.yaml
 	rm -rf output/*
 	./bin/run-zeek-pcap-dir.sh
-	docker-compose -f docker-compose-rita.yml run --rm rita import /logs pcaps
-	docker-compose -f docker-compose-rita.yml run --name pcaps rita html-report
-	docker cp "pcaps:/pcaps" reports/$(shell date +"%s")
-	docker rm pcaps 2> /dev/null
-	docker stop network-tools_db_1 2> /dev/null
-	docker rm network-tools_db_1 2> /dev/null
 
 zeek-json-import:
 	rm -rf output-json/*
@@ -36,9 +31,6 @@ zeek-json-import:
 create-capinfos:
 	./bin/tshark.sh
 
-rita.yaml:
-	./bin/c2.sh
-
 dir-output: 
 	mkdir -p output output-json
 
@@ -47,6 +39,17 @@ dir-pcap:
 
 dir-reports:
 	mkdir -p reports
+
+rita.yaml:
+	./bin/c2.sh
+
+rita-generate-report:
+	docker-compose -f docker-compose-rita.yml run --rm rita import /logs pcaps
+	docker-compose -f docker-compose-rita.yml run --name pcaps rita html-report
+	docker cp "pcaps:/pcaps" reports/$(shell date +"%s")
+	docker rm pcaps 2> /dev/null
+	docker stop network-tools_db_1 2> /dev/null
+	docker rm network-tools_db_1 2> /dev/null
 
 rita-open-report:
 	open reports/$(shell ls -rt reports/ | tail -1)/pcaps/index.html 2> /dev/null || true
@@ -76,12 +79,17 @@ es-up:
 es-down:
 	docker-compose -f docker-compose-elastic.yml down
 
-clean:
-	rm -rf .env rita.yaml || true
-	docker rm pcaps 2> /dev/null || true
+clean-db:
 	docker stop network-tools_db_1 2> /dev/null || true
 	docker rm network-tools_db_1 2> /dev/null || true
 	docker volume rm network-tools_db 2> /dev/null || true
+
+clean-pcaps:
+	docker stop  pcaps 2> /dev/null || true
+	docker rm pcaps 2> /dev/null || true
+
+clean: clean-db clean-pcaps
+	rm -rf .env rita.yaml || true
 
 dist-clean: image-rm clean
 	rm -rf output output-json reports
