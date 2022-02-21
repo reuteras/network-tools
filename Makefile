@@ -17,7 +17,7 @@ zeek-interactive-shell:
 zeek-zeek2es-import: .env python-requires es-up
 	. $(virtualenv)/bin/activate && find output -name "*.log" -exec python zeek2es.py {} \;
 
-zeek-output: dir-output dir-pcap dir-reports clean rita.yaml
+zeek-output: dir-output dir-pcap dir-reports clean
 	rm -rf output/*
 	./bin/run-zeek-pcap-dir.sh
 
@@ -45,7 +45,7 @@ dirs: dir-output dir-pcap dir-reports
 rita.yaml:
 	./bin/c2.sh
 
-rita-generate-report:
+rita-generate-report: rita.yaml
 	docker-compose -f docker-compose-rita.yml run --rm rita import /logs pcaps
 	docker-compose -f docker-compose-rita.yml run --name pcaps rita html-report
 	docker cp "pcaps:/pcaps" reports/$(shell date +"%s")
