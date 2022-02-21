@@ -40,6 +40,8 @@ dir-pcap:
 dir-reports:
 	mkdir -p reports
 
+dirs: dir-output dir-pcap dir-reports
+
 rita.yaml:
 	./bin/c2.sh
 

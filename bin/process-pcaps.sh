@@ -14,6 +14,8 @@ if [[ ! -d "${PCAP_DIR}" ]]; then
     exit
 fi
 
+[[ -d output ]] || mkdir output
+
 # Only run if output directory is empty
 if ! find output -type f | wc -l | grep -E "^0" > /dev/null ; then
     echo "Directory output not empty"
