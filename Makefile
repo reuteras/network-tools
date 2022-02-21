@@ -17,11 +17,11 @@ zeek-interactive-shell:
 zeek-zeek2es-import: .env python-requires es-up
 	. $(virtualenv)/bin/activate && find output -name "*.log" -exec python zeek2es.py {} \;
 
-zeek-output: dir-output dir-pcap dir-reports clean
+zeek-output: output pcap clean
 	rm -rf output/*
 	./bin/run-zeek-pcap-dir.sh
 
-zeek-json-import:
+zeek-json-import: output-json
 	rm -rf output-json/*
 	docker-compose -f docker-compose-elastic.yml --profile filebeat up -d
 	./bin/create_index.sh json
@@ -31,21 +31,24 @@ zeek-json-import:
 create-capinfos:
 	./bin/tshark.sh
 
-dir-output: 
-	mkdir -p output output-json
+output: 
+	mkdir -p output
 
-dir-pcap:
+output-json:
+	mkdir -p output-json
+
+pcap:
 	mkdir -p pcap
 
-dir-reports:
+reports:
 	mkdir -p reports
 
-dirs: dir-output dir-pcap dir-reports
+dirs: output output-json pcap reports
 
 rita.yaml:
 	./bin/c2.sh
 
-rita-generate-report: rita.yaml
+rita-generate-report: rita.yaml reports
 	docker-compose -f docker-compose-rita.yml run --rm rita import /logs pcaps
 	docker-compose -f docker-compose-rita.yml run --name pcaps rita html-report
 	docker cp "pcaps:/pcaps" reports/$(shell date +"%s")
