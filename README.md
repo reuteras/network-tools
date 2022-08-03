@@ -44,9 +44,10 @@ More information about tools used in this project.
 
 ## TODO
 
-- How should [Sigma](https://github.com/SigmaHQ/sigma) rules be included?
+- How should [Sigma](https://github.com/SigmaHQ/sigma) rules be included? Check out the updated [Sigma CLI][scl].
 - Look at [How to hunt with Zeek using Sigma rules for your SIEM](https://www.youtube.com/watch?v=B20u53S72zA)
 - Sigma rules for Cobalt strike (but no pcap) can be found in [Cobalt Strike, a Defender’s Guide](https://thedfirreport.com/2021/08/29/cobalt-strike-a-defenders-guide/) and in [Cobalt Strike, a Defender’s Guide – Part 2](https://thedfirreport.com/2022/01/24/cobalt-strike-a-defenders-guide-part-2/) by The DFIR Report.
 - Configure local networks for Zeek and other configuration changes
 - Look at [docker-zeek](https://github.com/blacktop/docker-zeek)
 
+    [scl]: https://twitter.com/blubbfiction/status/1554760172475645953
