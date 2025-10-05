@@ -38,10 +38,10 @@ fi
 
 # Process pcaps in directory.
 for pcap in "${PCAP_DIR}"/* ; do
-    docker run -it --rm -v "${PCAP_DIR}":/pcap:ro -v "${PWD}/output":/output -w /output reuteras/container-zeek zeek -C -r /pcap/"$(basename ${pcap})"
+    docker run -it --rm -v "${PCAP_DIR}":/pcap:ro -v "${PWD}/output":/output -w /output reuteras/container-zeek zeek -C -r /pcap/$(basename "${pcap}")
     time=$(capinfos "${pcap}" | grep "First packet time" | awk '{print $4"-"$5}' | cut -f1 -d,)
     for log in output/*; do
-        logname=$(basename ${log} | cut -f1 -d.)
+        logname=$(basename "${log}" | cut -f1 -d.)
         if [[ -e "${LOG_DIR}"/"${logname}.${time}.log" ]]; then
             echo "Log exists! ${LOG_DIR}/${logname}.${time}.log"
             exit
