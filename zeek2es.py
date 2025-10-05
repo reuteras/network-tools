@@ -98,7 +98,7 @@ def sendmappings(args, es_index, mappings):
     if (len(args['user']) > 0):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
-    res = requests.put(args['esurl']+es_index, headers={'Content-Type': 'application/json'},
+    requests.put(args['esurl']+es_index, headers={'Content-Type': 'application/json'},
                         data=json.dumps(mappings).encode('UTF-8'), auth=auth, verify=False)
 
 # A function to send the ingest pipeline to ES.

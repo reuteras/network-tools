@@ -38,7 +38,8 @@ fi
 
 # Process pcaps in directory.
 for pcap in "${PCAP_DIR}"/* ; do
-    docker run -it --rm -v "${PCAP_DIR}":/pcap:ro -v "${PWD}/output":/output -w /output reuteras/container-zeek zeek -C -r /pcap/$(basename "${pcap}")
+    $pcap_basename=$(basename "$pcap")
+    docker run -it --rm -v "${PCAP_DIR}":/pcap:ro -v "${PWD}/output":/output -w /output reuteras/container-zeek zeek -C -r /pcap/"${pcap_basename}"
     time=$(capinfos "${pcap}" | grep "First packet time" | awk '{print $4"-"$5}' | cut -f1 -d,)
     for log in output/*; do
         logname=$(basename "${log}" | cut -f1 -d.)
