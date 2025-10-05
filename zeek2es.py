@@ -11,8 +11,6 @@ import re
 import argparse
 import random
 # Making these available for lambda filter input.
-import ipaddress
-import os
 
 # The number of bits to use in a random hash.
 hashbits = 128
@@ -86,11 +84,11 @@ def senddatastream(args, es_index, mappings):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
     lifecycle_policy = {"policy": {"phases": {"hot": {"actions": {"rollover": {"max_primary_shard_size": "{}GB".format(args['datastream'])}}}}}}
-    res = requests.put(args['esurl']+"_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
+    requests.put(args['esurl']+"_ilm/policy/zeek-lifecycle-policy", headers={'Content-Type': 'application/json'},
                         data=json.dumps(lifecycle_policy).encode('UTF-8'), auth=auth, verify=False)
     index_template = {"index_patterns": [es_index], "data_stream": {}, "composed_of": [], "priority": 500, 
                         "template": {"settings": {"index.lifecycle.name": "zeek-lifecycle-policy"}, "mappings": mappings["mappings"]}}
-    res = requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
+    requests.put(args['esurl']+"_index_template/"+es_index, headers={'Content-Type': 'application/json'},
                         data=json.dumps(index_template).encode('UTF-8'), auth=auth, verify=False)
 
 # A function to send mappings to ES.
@@ -110,7 +108,7 @@ def sendpipeline(args, ingest_pipeline):
     if (len(args['user']) > 0):
         auth = HTTPBasicAuth(args['user'], args['passwd'])
 
-    res = requests.put(args['esurl']+"_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
+    requests.put(args['esurl']+"_ingest/pipeline/zeekgeoip", headers={'Content-Type': 'application/json'},
                         data=json.dumps(ingest_pipeline).encode('UTF-8'), auth=auth, verify=False)
 
 # Everything important is in here.
@@ -219,7 +217,7 @@ def main(**args):
 
         try:
             log_date = datetime.datetime.strptime(grep_process.communicate()[0].decode('UTF-8').strip().split('\t')[1], "%Y-%m-%d-%H-%M-%S")
-        except:
+        except: # noqa: E722
             if not args['supresswarnings']:
                 print("Date not found from Zeek log! {}".format(filename))
             exit(-4)
@@ -414,10 +412,10 @@ def main(**args):
                         items += 1
                         # If we aren't using stdout, prepare the ES index/datastream.
                         if not args['stdout']:
-                            if putmapping == False:
+                            if not putmapping:
                                 sendmappings(args, es_index, mappings)
                                 putmapping = True
-                            if putpipeline == False and len(ingest_pipeline["processors"]) > 0:
+                            if not putpipeline and len(ingest_pipeline["processors"]) > 0:
                                 sendpipeline(args, ingest_pipeline)
                                 putpipeline = True
 
@@ -488,7 +486,7 @@ def main(**args):
                     # Since the JSON logs do not include the Zeek log path, we try to guess it from the name.
                     try:
                         zeek_log_path = re.search(".*\/([^\._]+).*", filename).group(1).lower()
-                    except:
+                    except: # noqa: E722
                         print("Log path cannot be found from filename: {}".format(filename))
                         exit(-5)
 
@@ -502,13 +500,13 @@ def main(**args):
 
                 # If we are not sending the data to stdout, we prepare the ES index or datastream.
                 if not args['stdout']:
-                    if putmapping == False:
+                    if not putmapping:
                         sendmappings(args, es_index, mappings)
                         putmapping = True
-                    if putpipeline == False and len(ingest_pipeline["processors"]) > 0:
+                    if not putpipeline and len(ingest_pipeline["processors"]) > 0:
                         sendpipeline(args, ingest_pipeline)
                         putpipeline = True
-                    if args["datastream"] > 0 and putdatastream == False:
+                    if args["datastream"] > 0 and not putdatastream:
                         senddatastream(args, es_index, mappings)
                         putdatastream = True
 
